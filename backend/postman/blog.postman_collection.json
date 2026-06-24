@@ -1,0 +1,763 @@
+{
+  "info": {
+    "_postman_id": "2a7bfe7c-2f53-4be3-9b2b-730a3ab7f601",
+    "name": "Backend Blog API Tests",
+    "description": "Postman tests for the blog API. Run the requests in order: register, login, create blog, list blogs, my blogs, and negative tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register Test User",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const stamp = Date.now();",
+              "pm.collectionVariables.set('testEmail', `blog.user.${stamp}@example.com`);",
+              "pm.collectionVariables.set('testUsername', `bloguser${stamp}`);",
+              "pm.collectionVariables.set('testPassword', 'password123');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('register returns 201 or existing-user 400', function () {",
+              "  pm.expect([201, 400]).to.include(pm.response.code);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('register response has success flag', function () {",
+              "  pm.expect(json).to.have.property('success');",
+              "});",
+              "",
+              "if (pm.response.code === 201) {",
+              "  pm.test('created user has email', function () {",
+              "    pm.expect(json.data.email).to.eql(pm.collectionVariables.get('testEmail'));",
+              "  });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Blog\",\n  \"lastName\": \"Tester\",\n  \"email\": \"{{testEmail}}\",\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Login Test User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('login returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('login response contains token', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.data).to.have.property('token').that.is.a('string').and.is.not.empty;",
+              "});",
+              "",
+              "pm.collectionVariables.set('authToken', json.data.token);",
+              "pm.collectionVariables.set('userId', json.data.user._id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"{{testPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Create Blog",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set('blogTitle', `Postman Blog ${Date.now()}`);",
+              "pm.collectionVariables.set('blogContent', 'This blog was created from a Postman automated test case.');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('create blog returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('create blog response is successful', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.message).to.eql('Blog created successfully');",
+              "});",
+              "",
+              "pm.test('created blog has expected fields', function () {",
+              "  pm.expect(json.data.title).to.eql(pm.collectionVariables.get('blogTitle'));",
+              "  pm.expect(json.data.content).to.eql(pm.collectionVariables.get('blogContent'));",
+              "  pm.expect(json.data.authorId).to.eql(pm.collectionVariables.get('userId'));",
+              "  pm.expect(json.data).to.have.property('_id');",
+              "});",
+              "",
+              "pm.collectionVariables.set('blogId', json.data._id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{blogTitle}}\",\n  \"content\": \"{{blogContent}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Validation Error",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('missing content returns 400', function () {",
+              "  pm.response.to.have.status(400);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('validation response is unsuccessful', function () {",
+              "  pm.expect(json.success).to.eql(false);",
+              "  pm.expect(json.message).to.be.a('string').and.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Missing Content Blog\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Get Blog By Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('get blog by id returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('get blog by id response is successful', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.message).to.eql('Blog retrieved successfully');",
+              "});",
+              "",
+              "pm.test('returned blog matches created blog', function () {",
+              "  pm.expect(json.data._id).to.eql(pm.collectionVariables.get('blogId'));",
+              "  pm.expect(json.data.title).to.eql(pm.collectionVariables.get('blogTitle'));",
+              "  pm.expect(json.data.content).to.eql(pm.collectionVariables.get('blogContent'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "{{blogId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Update Blog",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set('updatedBlogTitle', `${pm.collectionVariables.get('blogTitle')} Updated`);",
+              "pm.collectionVariables.set('updatedBlogContent', 'This blog was updated from a Postman automated test case.');"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('update blog returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('update blog response is successful', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.message).to.eql('Blog updated successfully');",
+              "});",
+              "",
+              "pm.test('updated blog has new values', function () {",
+              "  pm.expect(json.data._id).to.eql(pm.collectionVariables.get('blogId'));",
+              "  pm.expect(json.data.title).to.eql(pm.collectionVariables.get('updatedBlogTitle'));",
+              "  pm.expect(json.data.content).to.eql(pm.collectionVariables.get('updatedBlogContent'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"{{updatedBlogTitle}}\",\n  \"content\": \"{{updatedBlogContent}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "{{blogId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Get Updated Blog By Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('get updated blog returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('returned blog contains updated values', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.data._id).to.eql(pm.collectionVariables.get('blogId'));",
+              "  pm.expect(json.data.title).to.eql(pm.collectionVariables.get('updatedBlogTitle'));",
+              "  pm.expect(json.data.content).to.eql(pm.collectionVariables.get('updatedBlogContent'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "{{blogId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - List Paginated Blogs",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('list blogs returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('list blogs response has data and pagination meta', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.data).to.be.an('array');",
+              "  pm.expect(json.meta).to.include.keys(['total', 'page', 'limit', 'totalPages']);",
+              "  pm.expect(json.meta.page).to.eql(1);",
+              "  pm.expect(json.meta.limit).to.eql(10);",
+              "});",
+              "",
+              "pm.test('created blog appears in paginated list when within first page', function () {",
+              "  if (json.data.length < 10) {",
+              "    const createdBlog = json.data.find((blog) => blog._id === pm.collectionVariables.get('blogId'));",
+              "    pm.expect(createdBlog).to.exist;",
+              "  }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs?page=1&limit=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Search Blogs",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('search blogs returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('search blogs response has pagination meta', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.data).to.be.an('array');",
+              "  pm.expect(json.meta).to.include.keys(['total', 'page', 'limit', 'totalPages']);",
+              "});",
+              "",
+              "pm.test('search result contains created blog', function () {",
+              "  const createdBlog = json.data.find((blog) => blog._id === pm.collectionVariables.get('blogId'));",
+              "  pm.expect(createdBlog).to.exist;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs?page=1&limit=10&search={{blogTitle}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "search",
+              "value": "{{blogTitle}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - My Blogs",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('my blogs returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('my blogs response is successful', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.data).to.be.an('array');",
+              "});",
+              "",
+              "pm.test('my blogs includes created blog', function () {",
+              "  const createdBlog = json.data.find((blog) => blog._id === pm.collectionVariables.get('blogId'));",
+              "  pm.expect(createdBlog).to.exist;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/my-blogs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "my-blogs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Unauthorized My Blogs",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('my blogs without token returns 401', function () {",
+              "  pm.response.to.have.status(401);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('unauthorized response is unsuccessful', function () {",
+              "  pm.expect(json.success).to.eql(false);",
+              "  pm.expect(json.message).to.be.a('string').and.is.not.empty;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/my-blogs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "my-blogs"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Delete Blog",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('delete blog returns 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('delete blog response is successful', function () {",
+              "  pm.expect(json.success).to.eql(true);",
+              "  pm.expect(json.message).to.eql('Blog deleted successfully');",
+              "  pm.expect(json.data.id).to.eql(pm.collectionVariables.get('blogId'));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{authToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "{{blogId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Blog - Get Deleted Blog",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('get deleted blog returns 404', function () {",
+              "  pm.response.to.have.status(404);",
+              "});",
+              "",
+              "const json = pm.response.json();",
+              "pm.test('deleted blog response is unsuccessful', function () {",
+              "  pm.expect(json.success).to.eql(false);",
+              "  pm.expect(json.message).to.eql('Blog not found');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/blogs/{{blogId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "blogs",
+            "{{blogId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8088"
+    },
+    {
+      "key": "testEmail",
+      "value": ""
+    },
+    {
+      "key": "testUsername",
+      "value": ""
+    },
+    {
+      "key": "testPassword",
+      "value": ""
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "blogTitle",
+      "value": ""
+    },
+    {
+      "key": "blogContent",
+      "value": ""
+    },
+    {
+      "key": "updatedBlogTitle",
+      "value": ""
+    },
+    {
+      "key": "updatedBlogContent",
+      "value": ""
+    },
+    {
+      "key": "blogId",
+      "value": ""
+    }
+  ]
+}
