@@ -1,17 +1,4 @@
 services:
-  # Express + TypeScript API
-  api:
-    build: ./backend
-    container_name: api-container
-    ports:
-      - "8088:8088"
-    environment:
-      - NODE_ENV=production
-      - PORT=8088
-      - MONGODB_URI=mongodb://mongo:27017/class36a
-    depends_on:
-      - mongo
-
   # Next.js frontend
   web:
     build: ./web-next
@@ -21,18 +8,4 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - NEXT_PUBLIC_API_URL=http://api:8088
-    depends_on:
-      - api
-
-  # MongoDB database
-  mongo:
-    image: mongo:8
-    container_name: mongo-container
-    ports:
-      - "27018:27017"
-    volumes:
-      - mongo-data:/data/db
-
-volumes:
-  mongo-data:
+      - NEXT_PUBLIC_API_URL=https://all-web-1.onrender.com
