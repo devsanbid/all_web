@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const backendURL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088";
+  process.env.NEXT_PUBLIC_API_URL || "https://all-web-1.onrender.com";
 const IsDEV = backendURL.startsWith("http://localhost");
 
 const nextConfig: NextConfig = {
@@ -12,9 +12,8 @@ const nextConfig: NextConfig = {
     dangerouslyAllowLocalIP: IsDEV,
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8088',
+        protocol: 'https',
+        hostname: 'all-web-1.onrender.com',
         pathname: '/uploads/**',
       },
       {

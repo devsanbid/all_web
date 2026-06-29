@@ -126,7 +126,7 @@ export default function UpdateUserForm({
                         </div>
                     ) : user?.imageUrl ? (
                         <Image
-                            src={"http://localhost:8089" + user.imageUrl}
+                            src={process.env.NEXT_PUBLIC_API_URL + user.imageUrl}
                             alt="Profile Image"
                             width={100}
                             height={100}
