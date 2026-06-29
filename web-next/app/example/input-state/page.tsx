@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, ChangeEvent } from "react";
 export default function Page() {
     const [email, setEmail] = useState("");
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

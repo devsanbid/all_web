@@ -76,7 +76,7 @@ export default function LoginForm() {
                 </button>
                 <div className="mt-4">
                     <p className="mt-4 text-center">
-                        Don't have an account? <a href="/register" className="text-blue-500">Register here</a>.
+                        Don&apos;t have an account? <a href="/register" className="text-blue-500">Register here</a>.
                     </p>
                 </div>
             </form>

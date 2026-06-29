@@ -24,7 +24,7 @@ export default function ContextPage() {
     );
 }
 function SomeComponent(){
-    const { count, increment, decrement } = useContext(CounterContext);
+    const { count, increment } = useContext(CounterContext);
     return (
         <div>
             {count}
@@ -34,7 +34,7 @@ function SomeComponent(){
     )
 }
 function ChildComponent(){
-    const { count, increment, decrement } = useContext(CounterContext); 
+    const { count, decrement } = useContext(CounterContext); 
     return (
         <div>
             Child Using: {count}

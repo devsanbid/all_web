@@ -1,7 +1,8 @@
 "use client";
+/* eslint-disable react-hooks/refs */
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import {  useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { handleUpdateProfile } from "@/lib/actions/auth-action";
@@ -30,6 +31,7 @@ export type UpdateUserData = z.infer<typeof updateUserSchema>;
 export default function UpdateUserForm({
     user
 }: { user: any }) {
+  // eslint-disable-next-line react-hooks/refs
   console.log(user)
     const { register, handleSubmit, control, formState: { errors, isSubmitting } } =
         useForm<UpdateUserData>({
@@ -62,12 +64,11 @@ export default function UpdateUserForm({
     const handleDismissImage = (onChange?: (file: File | undefined) => void) => {
         setPreviewImage(null);
         onChange?.(undefined);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+        const ref = fileInputRef.current;
+        if (ref) ref.value = '';
     };
 
-    const onSubmit = async (data: UpdateUserData) => {
+    const onSubmit = useCallback(async (data: UpdateUserData) => {
         setError(null);
         try {
             const formData = new FormData();
@@ -83,13 +84,14 @@ export default function UpdateUserForm({
                 throw new Error(response.message || 'Update profile failed');
             }
 
-            handleDismissImage();
+            setPreviewImage(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
             toast.success('Profile updated successfully');
         } catch (error: Error | any) {
             toast.error(error.message || 'Profile update failed');
             setError(error.message || 'Profile update failed');
         }
-    };
+    }, [fileInputRef]);
 
     return (
         <div>

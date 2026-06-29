@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const user = await getUserInfoCookie();
             setUser(user);
             setIsAuthenticated(!!token);
-        } catch (err) {
+        } catch {
             setIsAuthenticated(false);
             setUser(null);
         } finally {
@@ -33,8 +33,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     useEffect(() => {
-        checkAuth();
-    }, []);
+        const init = async () => {
+            await checkAuth();
+        };
+        init();
+    }, [checkAuth]);
 
     const logout = async () => {
         try {

@@ -1,12 +1,8 @@
 "use client";
 import useCount from "./use-count";
 export default function Page() {
-    // object destructure
-    const { count, count2, incrementCount2, decrementCount2, resetCount2 } 
+    const { count2, incrementCount2, decrementCount2, resetCount2 } 
         = useCount();
-    // use as object
-    // const hookCount = useCount();
-    // use as hookCount.count, hookCount.incrementCount2() etc
     return (
         <div>
             <div>

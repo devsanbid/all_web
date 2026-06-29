@@ -5,6 +5,7 @@ const backendURL =
 const IsDEV = backendURL.startsWith("http://localhost");
 
 const nextConfig: NextConfig = {
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined,
 
   /* config options here */
   images: {
