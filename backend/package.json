@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "day1.js",
   "scripts": {
-    "dev": "bun index.ts",
+    "dev": "node index.ts",
     "start": "node day1.js",
     "start-day2": "node day2.js",
     "test": "jest --verbose --detectOpenHandles"
