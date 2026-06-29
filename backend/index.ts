@@ -1,3 +1,4 @@
+import "dotenv/config";
 import app, { PORT, dummy } from "./src/app";
 import { PORT as SERVER_PORT } from "./src/config/constant";
 import { connectToMongoDB } from "./src/database/mongodb";
